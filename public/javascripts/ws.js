@@ -1,5 +1,7 @@
+var socket = null;
+
 function wsConnect(url = 'http://localhost:3010', token) {
-  var socket = io(url, {query: 'auth_token='+token});
+  socket = io(url, {query: 'auth_token='+token});
   // Connection failed
   socket.on('error', function(err) {
     throw new Error(err);

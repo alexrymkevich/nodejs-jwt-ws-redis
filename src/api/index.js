@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
+require('dotenv').config();
 
 const app = require('./app');
 const debug = require('debug')('node-ws:server');

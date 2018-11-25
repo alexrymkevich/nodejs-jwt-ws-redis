@@ -1,7 +1,14 @@
 {
   "name": "node-jwt",
   "version": "0.0.1",
+  "author": "Aleksei Rymkevich <alex.rymkevich@gmail.com>",
   "private": true,
+  "main": "src/api/index.js",
+  "engines": {
+    "node": ">=8.10.0",
+    "npm": ">=5.6.0",
+    "yarn": ">=1.5.1"
+  },
   "scripts": {
     "precommit": "npm run lint-staged",
     "start": "npm run build-api && nodemon dist/api",
@@ -20,17 +27,18 @@
     "body-parser": "latest",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
+    "dotenv": "^6.1.0",
     "express": "~4.16.0",
     "helmet": "^3.15.0",
     "hogan-express": "^0.5.2",
+    "ioredis": "^4.2.0",
     "jsonwebtoken": "^8.4.0",
-    "less-middleware": "~2.2.1",
     "loadsh": "0.0.3",
+    "lodash": "latest",
     "morgan": "~1.9.0",
     "socket.io": "^2.1.1",
     "socketio-jwt-auth": "0.0.6",
-    "uuid": "latest",
-    "lodash": "latest"
+    "uuid": "latest"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

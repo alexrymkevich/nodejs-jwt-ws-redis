@@ -1,4 +1,5 @@
 import authService from '../services/auth.service';
+import storeService from '../services/store.service';
 
 export function login(req, res) {
   const { username, password } = req.body;
@@ -17,7 +18,9 @@ export function login(req, res) {
 
       if (username === user.username && password === user.password) {
         const token = authService().createToken({ username: user.username, role: user.role });
-
+        console.log(token);
+        user.token = token;
+        storeService().set(token, user);
         return res.status(200).json({ token });
       }
 
