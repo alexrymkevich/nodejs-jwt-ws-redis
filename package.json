@@ -1,0 +1,51 @@
+{
+  "name": "node-jwt",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "precommit": "npm run lint-staged",
+    "start": "npm run build-api && nodemon dist/api",
+    "build-api": "babel src/api -d dist/api",
+    "start-ws": "npm run build-ws && nodemon dist/ws/ws.js",
+    "build-ws": "babel src/websocket -d dist/ws",
+    "serve": "node dist/api/index.js",
+    "test": "mocha --require babel-register",
+    "lint": "eslint ./src",
+    "lint-staged": "lint-staged",
+    "lint-staged:js": "eslint --ext .js",
+    "lint:fix": "eslint --fix --ext .js src"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "latest",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "helmet": "^3.15.0",
+    "hogan-express": "^0.5.2",
+    "jsonwebtoken": "^8.4.0",
+    "less-middleware": "~2.2.1",
+    "loadsh": "0.0.3",
+    "morgan": "~1.9.0",
+    "socket.io": "^2.1.1",
+    "socketio-jwt-auth": "0.0.6",
+    "uuid": "latest",
+    "lodash": "latest"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^8.1.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.17.3"
+  },
+  "lint-staged": {
+    "**/*.{js}": "lint-staged:js"
+  }
+}
