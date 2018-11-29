@@ -1,12 +1,21 @@
 /* eslint-disable no-param-reassign */
-
 import http from 'http';
 import io from 'socket.io';
 import each from 'lodash/each';
-import jwtAuth from 'socketio-jwt-auth';
 import uuid from 'uuid';
+import log4js from 'log4js';
+
+import jwtAuth from './jwt-auth';
+import storeService from './services/store.service';
+
 
 require('dotenv').config();
+
+log4js.configure({
+  appenders: { websocket: { type: 'file', filename: './logs/websocket.log' } },
+  categories: { default: { appenders: ['websocket'], level: 'debug' } },
+});
+const logger = log4js.getLogger('websocket');
 
 const express = require('express');
 
@@ -23,51 +32,51 @@ socketio.use(jwtAuth.authenticate({
   secret, // required, used to verify the token's signature
   algorithm, // optional, default to be HS256
 }, (payload, done) => {
-  // done is a callback, you can use it as follows
-  console.log(payload);
-  const user = {
-    username: 'alex',
-    role: 'developer',
-    password: 'alexpass',
-  };
-  if (payload && payload.username) {
+  storeService().get(payload.token).then((userJson) => {
+    const user = JSON.parse(userJson);
+    if (!user) {
+      // return fail with an error message
+      return done(null, false, 'user does not exist');
+    }
+    // return success with a user info
     return done(null, user);
-  }
-  return done();
-
-
-  // User.findOne({id: payload.sub}, function(err, user) {
-  //   if (err) {
-  //     // return error
-  //     return done(err);
-  //   }
-  //   if (!user) {
-  //     // return fail with an error message
-  //     return done(null, false, 'user does not exist');
-  //   }
-  //   // return success with a user info
-  //   return done(null, user);
-  // });
+  }).catch((err) => done(err));
 }));
 
 server.listen(process.env.WS_PORT, () => {
-  console.log('WS is listening on *:3010');
+  logger.debug('WS is listening on *:3010');
 });
 
 socketio.on('connection', (userSocket) => {
-  console.log('a user connected');
   userSocket.suid = uuid();
-
+  userSocket.channels = userSocket.request.user.channels;
+  logger.debug(userSocket.request.user);
+  logger.info(`user ${userSocket.suid} connected`);
   userSockets[userSocket.suid] = userSocket;
 
   userSocket.emit('success', {
     message: 'success logged in!',
-    user: userSocket.request.user,
+    channels: userSocket.request.user.channels,
   });
 
   userSocket.on('disconnect', () => {
     delete userSockets[userSocket.suid];
-    console.log(`user ${userSocket.suid} was disconnected`);
+    console.debug(`user ${userSocket.suid} was disconnected`);
+  });
+
+  userSocket.on('command', function (command) {
+    const { type, data } = command;
+    logger.info(command);
+    switch (type) {
+      case 'ADD_CHANNEL':
+        this.channels = [...this.channels, data];
+        break;
+      case 'REMOVE_CHANNEL':
+        this.channels = this.channels.filter((it) => it !== data);
+        break;
+      default:
+        break;
+    }
   });
 });
 
@@ -77,8 +86,20 @@ socketio.on('error', (err) => {
 
 setInterval(() => {
   each(userSockets, (socket) => {
-    socket.emit('channel1', {
-      data: Math.random(),
-    });
+    if (socket.channels && socket.channels.includes('info')) {
+      socket.emit('info', {
+        data: `info - ${Math.random()}`,
+      });
+    }
+    if (socket.channels && socket.channels.includes('channel1')) {
+      socket.emit('data', {
+        data: `channel 1 - ${Math.random()}`,
+      });
+    }
+    if (socket.channels && socket.channels.includes('channel2')) {
+      socket.emit('data', {
+        data: `channel 2 - ${Math.random()}`,
+      });
+    }
   });
-}, 2000);
+}, 1000);

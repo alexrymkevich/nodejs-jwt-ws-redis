@@ -6,17 +6,24 @@ export function login(req, res) {
 
   if (username && password) {
     try {
-      const user = {
+      const users = [{
         username: 'alex',
         role: 'developer',
         password: 'alexpass',
-      };
+        channels: ['info', 'channel1'],
+      },
+      {
+        username: 'test',
+        role: 'manager',
+        password: 'test',
+        channels: ['info', 'channel2'],
+      }];
 
-      if (!user) {
-        return res.status(400).json({ msg: 'Bad Request: User not found' });
-      }
-
-      if (username === user.username && password === user.password) {
+      // if (!user) {
+      //   return res.status(400).json({ msg: 'Bad Request: User not found' });
+      // }
+      const user = users.find((usr) => username === usr.username && password === usr.password);
+      if (user) {
         const token = authService().createToken({ username: user.username, role: user.role });
         console.log(token);
         user.token = token;
@@ -47,11 +54,10 @@ export function validateToken(req, res) {
 
 export function refreshToken(req, res) {
   const { token } = req.body;
-
-  authService().verifyToken(token, (err) => {
-    if (err) {
-      return res.status(401).json({ isvalid: false, err: 'Invalid Token!' });
-    }
+  try {
+    authService().verifyToken(token);
     return res.status(200).json({ isvalid: true });
-  });
+  } catch (err) {
+    return res.status(401).json({ isvalid: false, err: 'Invalid Token!' });
+  }
 }
