@@ -10,9 +10,11 @@ const clientRedis = new Redis({
 const storeService = function () {
   const set = (key, data) => clientRedis.set(key, JSON.stringify(data));
   const get = (key) => clientRedis.get(key);
+  const del = (key) => clientRedis.del(key);
 
   return {
     set,
+    del,
     get,
   };
 };

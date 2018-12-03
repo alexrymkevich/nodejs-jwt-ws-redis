@@ -20,25 +20,23 @@ export function login(req, res) {
       }];
 
       // if (!user) {
-      //   return res.status(400).json({ msg: 'Bad Request: User not found' });
+      //   return res.status(400).json({ message: 'Bad Request: User not found' });
       // }
-      const user = users.find((usr) => username === usr.username && password === usr.password);
+      let user = users.find((usr) => username === usr.username && password === usr.password);
       if (user) {
-        const token = authService().createToken({ username: user.username, role: user.role });
-        console.log(token);
-        user.token = token;
-        storeService().set(token, user);
-        return res.status(200).json({ token });
+        const authData = authService().createToken({ username: user.username, role: user.role });
+        user = { ...user, ...authData };
+        storeService().set(authData.token, user);
+        return res.status(200).json(authData);
       }
 
-      return res.status(401).json({ msg: 'Unauthorized' });
+      return res.status(401).json({ message: 'Unauthorized' });
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({ msg: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 
-  return res.status(400).json({ msg: 'Bad Request: Email or password is wrong' });
+  return res.status(400).json({ message: 'Bad Request: Email or password is wrong' });
 }
 
 export function validateToken(req, res) {
@@ -53,11 +51,16 @@ export function validateToken(req, res) {
 }
 
 export function refreshToken(req, res) {
-  const { token } = req.body;
-  try {
-    authService().verifyToken(token);
-    return res.status(200).json({ isvalid: true });
-  } catch (err) {
-    return res.status(401).json({ isvalid: false, err: 'Invalid Token!' });
-  }
+  const { refreshToken, token } = req.body;
+  storeService().get(token).then((userDB) => {
+    let user = JSON.parse(userDB);
+    if (user && user.refreshToken === refreshToken) {
+      const authData = authService().createToken({ username: user.username, role: user.role });
+      user = { ...user, ...authData };
+      storeService().del(user.token);
+      storeService().set(authData.token, user);
+      return res.status(200).json(authData);
+    }
+    return res.status(401).json({ message: 'Invalid Token!', type: 'UNAUTHORIZED' });
+  });
 }
