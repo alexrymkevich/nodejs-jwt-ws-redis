@@ -19,9 +19,6 @@ export function login(req, res) {
         channels: ['info', 'channel2'],
       }];
 
-      // if (!user) {
-      //   return res.status(400).json({ message: 'Bad Request: User not found' });
-      // }
       let user = users.find((usr) => username === usr.username && password === usr.password);
       if (user) {
         const authData = authService().createToken({ username: user.username, role: user.role });
@@ -30,24 +27,13 @@ export function login(req, res) {
         return res.status(200).json(authData);
       }
 
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({ message: 'Username or password is not correct.' });
     } catch (err) {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
 
-  return res.status(400).json({ message: 'Bad Request: Email or password is wrong' });
-}
-
-export function validateToken(req, res) {
-  const { token } = req.body;
-
-  authService().verifyToken(token, (err) => {
-    if (err) {
-      return res.status(401).json({ isvalid: false, err: 'Invalid Token!' });
-    }
-    return res.status(200).json({ isvalid: true });
-  });
+  return res.status(400).json({ message: 'Bad Request: Username or password is wrong' });
 }
 
 export function refreshToken(req, res) {
@@ -61,6 +47,18 @@ export function refreshToken(req, res) {
       storeService().set(authData.token, user);
       return res.status(200).json(authData);
     }
-    return res.status(401).json({ message: 'Invalid Token!', type: 'UNAUTHORIZED' });
+    return res.status(401).json({ message: 'Invalid Token!'});
+  });
+}
+
+export function logout(req, res) {
+  const { token } = req.body;
+  storeService().get(token).then((userDB) => {
+    const user = JSON.parse(userDB);
+    if (user) {
+      storeService().del(user.token);
+      return res.status(200).json({ message: 'logout successfully' });
+    }
+    return res.status(401).json({ message: 'Invalid Token!'});
   });
 }

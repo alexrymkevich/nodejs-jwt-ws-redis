@@ -64,9 +64,10 @@ socketio.on('connection', (userSocket) => {
     console.debug(`user ${userSocket.suid} was disconnected`);
   });
 
-  userSocket.on('command', function (command) {
+  userSocket.on('command', function (command, res) {
     const { type, data } = command;
     logger.info(command);
+    const success = true;
     switch (type) {
       case 'ADD_CHANNEL':
         this.channels = [...this.channels, data];
@@ -76,6 +77,11 @@ socketio.on('connection', (userSocket) => {
         break;
       default:
         break;
+    }
+    if (success) {
+      res({ success: true, msg: 'Success.' });
+    } else {
+      res({ success: false, msg: 'Something went wrong.' });
     }
   });
 });

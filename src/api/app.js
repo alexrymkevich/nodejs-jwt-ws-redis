@@ -6,7 +6,6 @@ const logger = require('morgan');
 const helmet = require('helmet');
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 
 const app = express();
@@ -40,7 +39,7 @@ app.use((req, res, next) => {
 
   // Pass to next layer of middleware
   if (req.method === 'OPTIONS') {
-    res.send(200);
+    res.sendStatus(200);
   } else {
     next();
   }
@@ -50,7 +49,6 @@ app.use((req, res, next) => {
 app.use(helmet());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 
 module.exports = app;
